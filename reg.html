@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход</title>
+    <link rel="stylesheet" href="css/style-reg.css">
+</head>
+<body>
+    <div class="container">
+        <main class="main">
+            <div class="block">
+                <h1 class="block-h1">Вход</h1>
+                <form id="registrationForm">
+                    <input placeholder="Логин" maxlength="30" class="block__input-name" type="text" id="username" name="username" required>
+        
+                    <input placeholder="Пароль" class="block__input-pass" type="password" id="password" name="password" required>
+
+                    <span style="display: flex; align-items: center; gap: 8px; margin-top: 23px; margin-left: 32px;">
+                        <input class="block__check-rem" type="checkbox" name="remember" id="remember">
+                        <label class="block__lable-rem" for="remember">Запомнить</label>
+                    </span>
+        
+                    <a href="indexac.html"><button class="block__btn" type="submit">Войти</button></a>
+                    <a href="index.html"><button class="block__home" type="button">Назад</button></a>
+                </form>
+            </div>
+        </main>
+    </div>
+    <script src="reg.js"></script>
+</body>
+</html>
