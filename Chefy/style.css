@@ -417,15 +417,15 @@ figcaption {
 
 /* Фоновые изображения для каждого блюда */
 .bludo__item:nth-child(1) {
-    background-image: url(img/Rectangle%2081.svg);
+    background-image: url(img/Rectangle%2081.png);
 }
 
 .bludo__item:nth-child(2) {
-    background-image: url(img/Rectangle%2082.svg);
+    background-image: url(img/Rectangle%2082.png);
 }
 
 .bludo__item:nth-child(3) {
-    background-image: url(img/Rectangle%2083.svg);
+    background-image: url(img/Rectangle%2083.png);
 }
 
 .section__6{
