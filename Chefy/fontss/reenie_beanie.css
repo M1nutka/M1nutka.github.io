@@ -1,0 +1,9 @@
+@font-face {
+	font-family: 'Reenie Beanie';
+	src: url('../fonts/reenie_beanie.eot'); /* IE 9 Compatibility Mode */
+	src: url('../fonts/reenie_beanie.eot?#iefix') format('embedded-opentype'), /* IE < 9 */
+		url('../fonts/reenie_beanie.woff2') format('woff2'), /* Super Modern Browsers */
+		url('../fonts/reenie_beanie.woff') format('woff'), /* Firefox >= 3.6, any other modern browser */
+		url('../fonts/reenie_beanie.ttf') format('truetype'), /* Safari, Android, iOS */
+		url('../fonts/reenie_beanie.svg#reenie_beanie') format('svg'); /* Chrome < 4, Legacy iOS */
+}
