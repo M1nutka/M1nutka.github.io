@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расписание Колледжа</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .app {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #0077ff, #0055cc);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .back-button {
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        /* Выбор группы */
+        .group-selection {
+            padding: 30px 20px;
+            text-align: center;
+        }
+        
+        .group-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .group-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .group-card:hover {
+            border-color: #0077ff;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,119,255,0.2);
+        }
+        
+        .group-card.selected {
+            border-color: #0077ff;
+            background: linear-gradient(135deg, #f8fbff, #e3f2fd);
+        }
+        
+        .group-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #0077ff;
+            margin-bottom: 5px;
+        }
+        
+        .group-specialty {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* Табличное расписание */
+        .schedule-table-container {
+            padding: 20px;
+            overflow-x: auto;
+        }
+        
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            background: white;
+        }
+        
+        .schedule-table th {
+            background: #0077ff;
+            color: white;
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 600;
+            border: 1px solid #e9ecef;
+        }
+        
+        .schedule-table td {
+            padding: 10px 8px;
+            border: 1px solid #e9ecef;
+            text-align: center;
+            vertical-align: top;
+        }
+        
+        .time-column {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #0077ff;
+            width: 100px;
+        }
+        
+        .pair-number {
+            background: #e3f2fd;
+            font-weight: 600;
+            color: #0077ff;
+        }
+        
+        .lesson-cell {
+            min-height: 80px;
+            background: #f8fbff;
+        }
+        
+        .lesson-subject {
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+        
+        .lesson-teacher {
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+            margin-bottom: 2px;
+        }
+        
+        .lesson-room {
+            font-size: 11px;
+            color: #0077ff;
+            background: rgba(0,119,255,0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        
+        .empty-cell {
+            background: #f8f9fa;
+            color: #999;
+            font-style: italic;
+        }
+        
+        .group-header {
+            background: #0055cc !important;
+        }
+        
+        /* Навигация по датам */
+        .date-navigation {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 0 20px;
+        }
+        
+        .date-button {
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .date-button.active {
+            background: #0077ff;
+            color: white;
+            border-color: #0077ff;
+        }
+        
+        .date-button:hover {
+            border-color: #0077ff;
+        }
+        
+        /* Экран */
+        .screen {
+            display: none;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Экран выбора группы -->
+        <div class="screen active" id="groupScreen">
+            <div class="header">
+                <h1>🎓 Расписание Колледжа</h1>
+                <div class="subtitle">Выберите вашу группу</div>
+            </div>
+            <div class="group-selection">
+                <div class="group-grid" id="groupGrid">
+                    <!-- Группы будут здесь -->
+                </div>
+                <button style="margin-top: 30px; padding: 15px 30px; background: #0077ff; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 16px;" 
+                        onclick="showFullSchedule()">
+                    📋 Общее расписание на день
+                </button>
+            </div>
+        </div>
+
+        <!-- Экран расписания группы -->
+        <div class="screen" id="groupScheduleScreen">
+            <div class="header">
+                <button class="back-button" onclick="showGroupSelection()">← Назад</button>
+                <h1>📚 Расписание группы</h1>
+                <div class="subtitle" id="groupScheduleTitle">Группа: ...</div>
+            </div>
+            <div class="date-navigation" id="groupDateNavigation">
+                <!-- Даты будут здесь -->
+            </div>
+            <div class="schedule-table-container">
+                <table class="schedule-table" id="groupScheduleTable">
+                    <!-- Расписание группы будет здесь -->
+                </table>
+            </div>
+        </div>
+
+        <!-- Экран общего расписания -->
+        <div class="screen" id="fullScheduleScreen">
+            <div class="header">
+                <button class="back-button" onclick="showGroupSelection()">← Назад</button>
+                <h1>📋 Общее расписание</h1>
+                <div class="subtitle" id="fullScheduleDate">Дата: ...</div>
+            </div>
+            <div class="date-navigation" id="fullDateNavigation">
+                <!-- Даты будут здесь -->
+            </div>
+            <div class="schedule-table-container">
+                <table class="schedule-table" id="fullScheduleTable">
+                    <!-- Общее расписание будет здесь -->
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Данные расписания в табличном формате
+        const scheduleData = {
+            "2024-10-01": {
+                date: "2024-10-01",
+                title: "1 октября 2024 года (вторник)",
+                groups: ["Э-25-1", "Т-25-1", "И-25-1", "И-25-2", "С-25-1", "В-25-1", "О-25-1", "З-25-1", "ЭР-25-1"],
+                pairs: [
+                    {
+                        number: "1 пара",
+                        time: "8:30 – 10:00",
+                        lessons: [
+                            { subject: "Математика", teacher: "Союзникова", room: "206" },
+                            { subject: "Физкультура", teacher: "Чернецов", room: "Спортзал" },
+                            { subject: "История", teacher: "Ефремова", room: "107" },
+                            { subject: "Русский язык", teacher: "Союзнова", room: "207" },
+                            { subject: "Математика", teacher: "Гульданаева", room: "205" },
+                            { subject: "Физика", teacher: "Защита", room: "403" },
+                            { subject: "Англ язык", teacher: "Тику/Сабурова", room: "705/708" },
+                            null,
+                            null
+                        ]
+                    },
+                    {
+                        number: "2 пара",
+                        time: "10:10 – 11:40",
+                        lessons: [
+                            { subject: "История", teacher: "Ефремова", room: "107" },
+                            { subject: "Физика", teacher: "Защита", room: "403" },
+                            { subject: "Физкультура", teacher: "Перевозчиков", room: "Тренажерный зал" },
+                            { subject: "Математика", teacher: "Союзникова", room: "206" },
+                            { subject: "Математика", teacher: "Гульданаева", room: "205" },
+                            { subject: "Русский язык", teacher: "Союзнова", room: "207" },
+                            { subject: "Математика", teacher: "Тимопили", room: "702" },
+                            { subject: "Информатика", teacher: "Кузнецова/Рахимьянова", room: "302/304" },
+                            { subject: "Родной язык", teacher: "Храмова", room: "202" }
+                        ]
+                    },
+                    {
+                        number: "3 пара",
+                        time: "12:00 – 13:30",
+                        lessons: [
+                            { subject: "Англ язык", teacher: "Волкова/Шклаева", room: "306a/208" },
+                            { subject: "Литература", teacher: "Союзнова", room: "207" },
+                            { subject: "Физика", teacher: "Защита", room: "403" },
+                            { subject: "Биология", teacher: "Артемачева", room: "703" },
+                            null,
+                            { subject: "ОБЭР", teacher: "Феденеев", room: "708a" },
+                            { subject: "Обществознание", teacher: "Ефремова", room: "107" },
+                            { subject: "Обществознание", teacher: "Ощепков", room: "108" }
+                        ]
+                    },
+                    {
+                        number: "4 пара",
+                        time: "13:40 – 15:10",
+                        lessons: [
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            { subject: "Физика", teacher: "Защита", room: "403" },
+                            { subject: "Математика", teacher: "Союзникова", room: "206" },
+                            null
+                        ]
+                    },
+                    {
+                        number: "5 пара",
+                        time: "15:30 – 17:00",
+                        lessons: [
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            { subject: "Русский язык", teacher: "Союзнова", room: "207" },
+                            null,
+                            null
+                        ]
+                    },
+                    {
+                        number: "6 пара",
+                        time: "17:10 – 18:40",
+                        lessons: [null, null, null, null, null, null, null, null, null]
+                    }
+                ]
+            },
+            "2024-10-02": {
+                date: "2024-10-02",
+                title: "2 октября 2024 года (среда)",
+                groups: ["Э-25-1", "Т-25-1", "И-25-1", "И-25-2", "С-25-1", "В-25-1"],
+                pairs: [
+                    {
+                        number: "1 пара",
+                        time: "8:30 – 10:00",
+                        lessons: [
+                            { subject: "Физика", teacher: "Защита", room: "403" },
+                            { subject: "Математика", teacher: "Союзникова", room: "206" },
+                            { subject: "Химия", teacher: "Артемачева", room: "703" },
+                            { subject: "История", teacher: "Ефремова", room: "107" },
+                            { subject: "Русский язык", teacher: "Союзнова", room: "207" },
+                            { subject: "Биология", teacher: "Артемачева", room: "703" }
+                        ]
+                    },
+                    {
+                        number: "2 пара",
+                        time: "10:10 – 11:40",
+                        lessons: [
+                            { subject: "Информатика", teacher: "Кузнецова", room: "302" },
+                            { subject: "Физкультура", teacher: "Чернецов", room: "Спортзал" },
+                            { subject: "Математика", teacher: "Гульданаева", room: "205" },
+                            { subject: "Физика", teacher: "Защита", room: "403" },
+                            { subject: "Англ язык", teacher: "Волкова", room: "306a" },
+                            { subject: "Обществознание", teacher: "Ефремова", room: "107" }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        const groups = {
+            "Э-25-1": { name: "Э-25-1", specialty: "Экономика" },
+            "Т-25-1": { name: "Т-25-1", specialty: "Технология" },
+            "И-25-1": { name: "И-25-1", specialty: "Информатика" },
+            "И-25-2": { name: "И-25-2", specialty: "Информатика" },
+            "С-25-1": { name: "С-25-1", specialty: "Строительство" },
+            "В-25-1": { name: "В-25-1", specialty: "Ветеринария" },
+            "О-25-1": { name: "О-25-1", specialty: "Общественное" },
+            "З-25-1": { name: "З-25-1", specialty: "Землеустройство" },
+            "ЭР-25-1": { name: "ЭР-25-1", specialty: "Энергетика" }
+        };
+
+        let currentGroup = null;
+        let currentDate = "2024-10-01";
+
+        // Показать выбор группы
+        function showGroupSelection() {
+            showScreen('groupScreen');
+            renderGroups();
+        }
+
+        // Показать расписание группы
+        function showGroupSchedule() {
+            showScreen('groupScheduleScreen');
+            document.getElementById('groupScheduleTitle').textContent = `Группа: ${currentGroup}`;
+            renderGroupDateNavigation();
+            renderGroupSchedule();
+        }
+
+        // Показать общее расписание
+        function showFullSchedule() {
+            showScreen('fullScheduleScreen');
+            document.getElementById('fullScheduleDate').textContent = scheduleData[currentDate].title;
+            renderFullDateNavigation();
+            renderFullSchedule();
+        }
+
+        // Рендер групп
+        function renderGroups() {
+            const groupGrid = document.getElementById('groupGrid');
+            let html = '';
+            
+            Object.values(groups).forEach(group => {
+                html += `
+                    <div class="group-card" onclick="selectGroup('${group.name}')">
+                        <div class="group-name">${group.name}</div>
+                        <div class="group-specialty">${group.specialty}</div>
+                    </div>
+                `;
+            });
+            
+            groupGrid.innerHTML = html;
+        }
+
+        // Выбор группы
+        function selectGroup(groupName) {
+            currentGroup = groupName;
+            showGroupSchedule();
+        }
+
+        // Рендер навигации по датам для группы
+        function renderGroupDateNavigation() {
+            const nav = document.getElementById('groupDateNavigation');
+            let html = '';
+            
+            Object.keys(scheduleData).forEach(date => {
+                const schedule = scheduleData[date];
+                const isActive = date === currentDate;
+                const dateText = new Date(date).toLocaleDateString('ru-RU', { 
+                    day: 'numeric',
+                    month: 'short'
+                });
+                
+                html += `
+                    <button class="date-button ${isActive ? 'active' : ''}" 
+                            onclick="changeDate('${date}')">
+                        ${dateText}
+                    </button>
+                `;
+            });
+            
+            nav.innerHTML = html;
+        }
+
+        // Рендер навигации по датам для общего расписания
+        function renderFullDateNavigation() {
+            const nav = document.getElementById('fullDateNavigation');
+            let html = '';
+            
+            Object.keys(scheduleData).forEach(date => {
+                const schedule = scheduleData[date];
+                const isActive = date === currentDate;
+                const dateText = new Date(date).toLocaleDateString('ru-RU', { 
+                    day: 'numeric',
+                    month: 'short'
+                });
+                
+                html += `
+                    <button class="date-button ${isActive ? 'active' : ''}" 
+                            onclick="changeFullDate('${date}')">
+                        ${dateText}
+                    </button>
+                `;
+            });
+            
+            nav.innerHTML = html;
+        }
+
+        // Рендер расписания группы
+        function renderGroupSchedule() {
+            const table = document.getElementById('groupScheduleTable');
+            const schedule = scheduleData[currentDate];
+            const groupIndex = schedule.groups.indexOf(currentGroup);
+            
+            if (groupIndex === -1) {
+                table.innerHTML = `
+                    <tr>
+                        <td colspan="3" style="text-align: center; padding: 40px; color: #666;">
+                            На ${schedule.title} у группы ${currentGroup} пар нет
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let html = `
+                <tr>
+                    <th class="pair-number">№ пары</th>
+                    <th class="time-column">Время</th>
+                    <th>Занятие</th>
+                </tr>
+            `;
+            
+            schedule.pairs.forEach(pair => {
+                const lesson = pair.lessons[groupIndex];
+                
+                if (lesson) {
+                    html += `
+                        <tr>
+                            <td class="pair-number">${pair.number}</td>
+                            <td class="time-column">${pair.time}</td>
+                            <td class="lesson-cell">
+                                <div class="lesson-subject">${lesson.subject}</div>
+                                <div class="lesson-teacher">${lesson.teacher}</div>
+                                <div class="lesson-room">${lesson.room}</div>
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    html += `
+                        <tr>
+                            <td class="pair-number">${pair.number}</td>
+                            <td class="time-column">${pair.time}</td>
+                            <td class="empty-cell">Нет занятия</td>
+                        </tr>
+                    `;
+                }
+            });
+            
+            table.innerHTML = html;
+        }
+
+        // Рендер общего расписания
+        function renderFullSchedule() {
+            const table = document.getElementById('fullScheduleTable');
+            const schedule = scheduleData[currentDate];
+            
+            let html = `
+                <tr>
+                    <th class="pair-number">№ пары</th>
+                    <th class="time-column">Время</th>
+            `;
+            
+            // Заголовки групп
+            schedule.groups.forEach(group => {
+                html += `<th class="group-header">${group}</th>`;
+            });
+            
+            html += `</tr>`;
+            
+            // Строки с парами
+            schedule.pairs.forEach(pair => {
+                html += `
+                    <tr>
+                        <td class="pair-number">${pair.number}</td>
+                        <td class="time-column">${pair.time}</td>
+                `;
+                
+                // Ячейки с занятиями для каждой группы
+                pair.lessons.forEach((lesson, index) => {
+                    if (lesson) {
+                        html += `
+                            <td class="lesson-cell">
+                                <div class="lesson-subject">${lesson.subject}</div>
+                                <div class="lesson-teacher">${lesson.teacher}</div>
+                                <div class="lesson-room">${lesson.room}</div>
+                            </td>
+                        `;
+                    } else {
+                        html += `<td class="empty-cell">-</td>`;
+                    }
+                });
+                
+                // Заполняем пустые ячейки если групп меньше чем 9
+                for (let i = pair.lessons.length; i < 9; i++) {
+                    html += `<td class="empty-cell">-</td>`;
+                }
+                
+                html += `</tr>`;
+            });
+            
+            table.innerHTML = html;
+        }
+
+        // Смена даты для группы
+        function changeDate(date) {
+            currentDate = date;
+            renderGroupDateNavigation();
+            renderGroupSchedule();
+        }
+
+        // Смена даты для общего расписания
+        function changeFullDate(date) {
+            currentDate = date;
+            document.getElementById('fullScheduleDate').textContent = scheduleData[date].title;
+            renderFullDateNavigation();
+            renderFullSchedule();
+        }
+
+        // Вспомогательные функции
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', showGroupSelection);
+    </script>
+</body>
+</html>
