@@ -1,7 +1,10 @@
 {
-  "url": "https://your-username.github.io/your-repo-name/",
+  "url": "https://m1nutka.github.io/my-vk-app/",
   "name": "Расписание Колледжа",
-  "icon_url": "https://your-username.github.io/your-repo-name/icon.png",
+  "icon_url": "https://m1nutka.github.io/my-vk-app/icon.png",
   "description": "Приложение для просмотра расписания занятий",
-  "open_in_webview": true
+  "open_in_webview": true,
+  "scope": "friends,photos",
+  "redirect_uri": "https://m1nutka.github.io/my-vk-app/",
+  "api_id": 1234567
 }
