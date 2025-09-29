@@ -269,7 +269,33 @@
             </div>
         </div>
     </div>
-
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+    <script>
+// Инициализация VK Mini App
+document.addEventListener('DOMContentLoaded', function() {
+    // Проверяем, находимся ли мы в VK
+    if (typeof vkBridge !== 'undefined') {
+        // В VK - используем настоящий bridge
+        vkBridge.send('VKWebAppInit', {})
+            .then(() => {
+                console.log('VK Mini App инициализирован в VK');
+            })
+            .catch((error) => {
+                console.error('Ошибка инициализации VK:', error);
+            });
+    } else {
+        // В браузере - эмулируем VK Bridge
+        console.log('Запуск в браузере - эмуляция VK Bridge');
+        window.vkBridge = {
+            send: (method) => {
+                console.log('VK Bridge:', method);
+                return Promise.resolve({});
+            },
+            subscribe: () => console.log('Bridge subscribed')
+        };
+    }
+});
+</script>
     <script>
         // Данные расписания в табличном формате
         const scheduleData = {
@@ -633,4 +659,5 @@
         document.addEventListener('DOMContentLoaded', showGroupSelection);
     </script>
 </body>
+
 </html>
