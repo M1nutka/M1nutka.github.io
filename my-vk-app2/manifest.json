@@ -1,0 +1,7 @@
+{
+  "url": "https://your-username.github.io/your-repo-name/",
+  "name": "Расписание Колледжа",
+  "icon_url": "https://your-username.github.io/your-repo-name/icon.png",
+  "description": "Приложение для просмотра расписания занятий",
+  "open_in_webview": true
+}

@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расписание Колледжа ИПЭК</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .app {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #0077ff, #0055cc);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .back-button {
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        /* Загрузка файлов */
+        .file-upload {
+            padding: 30px 20px;
+            text-align: center;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .upload-button {
+            background: #0077ff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-button:hover {
+            background: #0055cc;
+            transform: translateY(-2px);
+        }
+        
+        .file-info {
+            margin-top: 15px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .format-info {
+            background: #e7f3ff;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        
+        /* Выбор группы */
+        .group-selection {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .group-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .group-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .group-card:hover {
+            border-color: #0077ff;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,119,255,0.2);
+        }
+        
+        .group-card.selected {
+            border-color: #0077ff;
+            background: linear-gradient(135deg, #f8fbff, #e3f2fd);
+        }
+        
+        .group-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0077ff;
+        }
+        
+        /* Табличное расписание */
+        .schedule-table-container {
+            padding: 20px;
+            overflow-x: auto;
+        }
+        
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            background: white;
+            min-width: 800px;
+        }
+        
+        .schedule-table th {
+            background: #0077ff;
+            color: white;
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 600;
+            border: 1px solid #e9ecef;
+            position: sticky;
+            top: 0;
+        }
+        
+        .schedule-table td {
+            padding: 10px 8px;
+            border: 1px solid #e9ecef;
+            text-align: center;
+            vertical-align: top;
+            min-width: 120px;
+        }
+        
+        .time-column {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #0077ff;
+            width: 100px;
+            position: sticky;
+            left: 0;
+        }
+        
+        .pair-number {
+            background: #e3f2fd;
+            font-weight: 600;
+            color: #0077ff;
+        }
+        
+        .lesson-cell {
+            min-height: 80px;
+            background: #f8fbff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .lesson-cell:hover {
+            background: #e3f2fd;
+        }
+        
+        .lesson-cell.has-lesson {
+            background: #e8f5e8;
+        }
+        
+        .lesson-subject {
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+        
+        .lesson-teacher {
+            font-size: 11px;
+            color: #666;
+            font-style: italic;
+            margin-bottom: 2px;
+        }
+        
+        .lesson-room {
+            font-size: 11px;
+            color: #0077ff;
+            background: rgba(0,119,255,0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        
+        .empty-cell {
+            background: #f8f9fa;
+            color: #999;
+            font-style: italic;
+        }
+        
+        .group-header {
+            background: #0055cc !important;
+            white-space: nowrap;
+        }
+        
+        /* Статус */
+        .status-bar {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-top: 1px solid #e9ecef;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .loading {
+            color: #0077ff;
+            font-style: italic;
+        }
+        
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .success {
+            color: #155724;
+            background: #d4edda;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        /* Экран */
+        .screen {
+            display: none;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Экран загрузки файлов -->
+        <div class="screen active" id="uploadScreen">
+            <div class="header">
+                <h1>🎓 Расписание Колледжа ИПЭК</h1>
+                <div class="subtitle">Загрузите файл расписания .docx</div>
+            </div>
+            
+            <div class="file-upload">
+                <input type="file" id="scheduleFile" accept=".docx,.doc" style="display: none;">
+                <button class="upload-button" onclick="document.getElementById('scheduleFile').click()">
+                    📁 Выбрать DOCX файл расписания
+                </button>
+                
+                <div class="format-info">
+                    <strong>Поддерживаемые форматы:</strong><br>
+                    • Файлы .docx с таблицами расписания<br>
+                    • Таблицы должны содержать номера групп в заголовках
+                </div>
+                
+                <div class="file-info" id="fileInfo">
+                    Выберите DOCX файл с расписанием
+                </div>
+            </div>
+            
+            <div class="status-bar">
+                <div id="uploadStatus">Ожидание загрузки файла...</div>
+            </div>
+        </div>
+
+        <!-- Экран выбора группы -->
+        <div class="screen" id="groupScreen">
+            <div class="header">
+                <button class="back-button" onclick="showScreen('uploadScreen')">← Назад</button>
+                <h1>👥 Выберите группу</h1>
+                <div class="subtitle" id="scheduleDate">Дата: ...</div>
+            </div>
+            
+            <div class="group-selection">
+                <div class="group-grid" id="groupGrid">
+                    <!-- Группы появятся после парсинга -->
+                </div>
+            </div>
+            
+            <div class="status-bar">
+                <div id="groupsCount">Загружено групп: 0</div>
+            </div>
+        </div>
+
+        <!-- Экран расписания группы -->
+        <div class="screen" id="groupScheduleScreen">
+            <div class="header">
+                <button class="back-button" onclick="showScreen('groupScreen')">← Назад</button>
+                <h1>📚 Расписание группы</h1>
+                <div class="subtitle" id="groupScheduleTitle">Группа: ...</div>
+            </div>
+            
+            <div class="schedule-table-container">
+                <table class="schedule-table" id="groupScheduleTable">
+                    <!-- Расписание группы появится здесь -->
+                </table>
+            </div>
+            
+            <div class="status-bar">
+                <div id="scheduleStatus">Загрузка расписания...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Подключаем библиотеки для работы с DOCX -->
+    <script src="https://unpkg.com/mammoth@1.4.17/mammoth.browser.min.js"></script>
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+    
+    <script>
+        // ==================== ПАРСЕР DOCX ФАЙЛОВ ====================
+        class DocxScheduleParser {
+            async parseDocxFile(file) {
+                try {
+                    const arrayBuffer = await this.readFileAsArrayBuffer(file);
+                    const result = await mammoth.convertToHtml({arrayBuffer});
+                    
+                    if (result.value) {
+                        return this.parseTableHTML(result.value);
+                    } else {
+                        throw new Error('Не удалось преобразовать DOCX файл');
+                    }
+                } catch (error) {
+                    console.error('Ошибка парсинга DOCX:', error);
+                    throw error;
+                }
+            }
+            
+            readFileAsArrayBuffer(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        resolve(e.target.result);
+                    };
+                    reader.onerror = reject;
+                    reader.readAsArrayBuffer(file);
+                });
+            }
+            
+            parseTableHTML(htmlText) {
+                try {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(htmlText, 'text/html');
+                    const tables = doc.querySelectorAll('table');
+                    
+                    console.log('Найдено таблиц в DOCX:', tables.length);
+                    
+                    const schedules = [];
+                    
+                    tables.forEach((table, tableIndex) => {
+                        try {
+                            const schedule = this.parseTable(table, tableIndex);
+                            if (schedule.groups.length > 0) {
+                                schedules.push(schedule);
+                            }
+                        } catch (error) {
+                            console.error('Ошибка парсинга таблицы:', error);
+                        }
+                    });
+                    
+                    return schedules;
+                } catch (error) {
+                    console.error('Ошибка парсинга HTML из DOCX:', error);
+                    return [];
+                }
+            }
+            
+            parseTable(table, tableIndex) {
+                const rows = Array.from(table.querySelectorAll('tr'));
+                const schedule = {
+                    date: this.extractDate(rows),
+                    groups: [],
+                    pairs: []
+                };
+                
+                // Ищем строку с заголовками групп
+                let headerRowIndex = this.findHeaderRow(rows);
+                if (headerRowIndex === -1) headerRowIndex = 0;
+                
+                const headerRow = rows[headerRowIndex];
+                schedule.groups = this.parseGroupHeaders(headerRow);
+                
+                console.log(`Таблица ${tableIndex + 1}: найдено ${schedule.groups.length} групп`);
+                
+                // Парсим строки с парами
+                for (let i = headerRowIndex + 1; i < rows.length; i++) {
+                    const pair = this.parsePairRow(rows[i], schedule.groups);
+                    if (pair && (pair.time || pair.number || pair.rawTime)) {
+                        schedule.pairs.push(pair);
+                    }
+                }
+                
+                return schedule;
+            }
+            
+            findHeaderRow(rows) {
+                for (let i = 0; i < Math.min(5, rows.length); i++) {
+                    const cells = rows[i].querySelectorAll('td, th');
+                    for (let cell of cells) {
+                        if (this.isGroupName(cell.textContent)) {
+                            return i;
+                        }
+                    }
+                }
+                return 0;
+            }
+            
+            extractDate(rows) {
+                // Ищем дату в первых нескольких строках
+                for (let i = 0; i < Math.min(3, rows.length); i++) {
+                    const row = rows[i];
+                    const cells = row.querySelectorAll('td, th');
+                    
+                    for (let cell of cells) {
+                        const text = cell.textContent.trim();
+                        if ((text.includes('РАСПИСАНИЕ') || text.includes('расписание')) && 
+                            (text.includes('202') || text.match(/\d{1,2}\s+[а-я]+\s+\d{4}/i))) {
+                            
+                            const dateMatch = text.match(/(\d{1,2}\s+[а-я]+\s+\d{4})/i);
+                            return dateMatch ? dateMatch[1] : 'Текущая дата';
+                        }
+                    }
+                }
+                return 'Текущая дата';
+            }
+            
+            parseGroupHeaders(headerRow) {
+                const groups = [];
+                const cells = headerRow.querySelectorAll('td, th');
+                
+                for (let i = 0; i < cells.length; i++) {
+                    const text = cells[i].textContent.trim();
+                    if (this.isGroupName(text)) {
+                        groups.push({
+                            name: text,
+                            index: i,
+                            fullName: text
+                        });
+                    }
+                }
+                
+                return groups;
+            }
+            
+                parsePairRow(row, groups) {
+        const cells = Array.from(row.querySelectorAll('td, th'));
+        if (cells.length === 0) return null;
+        
+        const firstCell = cells[0];
+        const firstCellText = firstCell.textContent.trim();
+        const pairInfo = {
+            time: this.extractTime(firstCellText),
+            number: this.extractPairNumber(firstCellText),
+            rawTime: firstCellText,
+            lessons: []
+        };
+        
+        // ИСПРАВЛЕНИЕ: Правильно определяем время
+        if (!pairInfo.time && pairInfo.number) {
+            // Если есть номер пары, но нет времени - используем стандартное время
+            pairInfo.time = this.getTimeByPairNumber(pairInfo.number);
+        }
+        
+        // Для каждой группы находим соответствующую ячейку
+        groups.forEach(group => {
+            if (cells[group.index]) {
+                const lessonText = cells[group.index].textContent.trim();
+                const lesson = this.parseLesson(lessonText);
+                pairInfo.lessons.push(lesson);
+            } else {
+                pairInfo.lessons.push(null);
+            }
+        });
+        
+        return pairInfo;
+    }
+    
+    parseLesson(text) {
+        const cleanText = text.trim();
+        if (!cleanText || cleanText === '-' || cleanText === '—' || cleanText === '') {
+            return null;
+        }
+        
+        // ИСПРАВЛЕНИЕ: Улучшенное разделение текста
+        let subject = '';
+        let teacher = '';
+        let room = '';
+        
+        // Разделяем по переносам строк или точкам
+        const lines = cleanText.split(/\n|\.\s+/).filter(line => line.trim());
+        
+        if (lines.length >= 1) {
+            subject = lines[0].trim();
+        }
+        if (lines.length >= 2) {
+            // Вторая строка - обычно преподаватель
+            teacher = lines[1].trim();
+        }
+        if (lines.length >= 3) {
+            // Третья строка - обычно аудитория
+            room = lines[2].trim();
+        }
+        
+        // Если всё в одной строке, пробуем умное разделение
+        if (lines.length === 1) {
+            return this.splitSingleLineLesson(cleanText);
+        }
+        
+        // ИСПРАВЛЕНИЕ: Если преподаватель не найден, ищем в тексте
+        if (!teacher) {
+            const teacherMatch = cleanText.match(/[А-ЯЁ][а-яё]+\s+[А-ЯЁ]\.\s*[А-ЯЁ]\./);
+            if (teacherMatch) {
+                teacher = teacherMatch[0];
+                // Убираем преподавателя из предмета
+                subject = subject.replace(teacher, '').trim();
+            }
+        }
+        
+        // ИСПРАВЛЕНИЕ: Ищем аудиторию
+        if (!room) {
+            const roomMatch = cleanText.match(/(\d+[а-я]?|\d+\/\d+|[А-Яа-я]+\s+[зЗ]ал|[А-Яа-я]+\s+[а-я]+)$/);
+            if (roomMatch) {
+                room = roomMatch[0].trim();
+                // Убираем аудиторию из предмета и преподавателя
+                subject = subject.replace(room, '').trim();
+                if (teacher) {
+                    teacher = teacher.replace(room, '').trim();
+                }
+            }
+        }
+        
+        return {
+            subject: subject || cleanText,
+            teacher: teacher,
+            room: room,
+            rawText: cleanText
+        };
+    }
+    
+    // НОВЫЙ МЕТОД: Умное разделение одной строки
+    splitSingleLineLesson(text) {
+        let subject = text;
+        let teacher = '';
+        let room = '';
+        
+        // Шаблоны для поиска
+        const teacherPattern = /[А-ЯЁ][а-яё]+\s+[А-ЯЁ]\.\s*[А-ЯЁ]\./;
+        const roomPattern = /(\d+[а-я]?|\d+\/\d+|[А-Яа-я]+\s+[зЗ]ал)$/;
+        
+        // Ищем преподавателя
+        const teacherMatch = text.match(teacherPattern);
+        if (teacherMatch) {
+            teacher = teacherMatch[0];
+            subject = subject.replace(teacher, '').trim();
+        }
+        
+        // Ищем аудиторию в конце строки
+        const roomMatch = text.match(roomPattern);
+        if (roomMatch) {
+            room = roomMatch[0];
+            subject = subject.replace(room, '').trim();
+            if (teacher) {
+                teacher = teacher.replace(room, '').trim();
+            }
+        }
+        
+        // Если преподаватель не найден, пробуем найти по фамилии
+        if (!teacher) {
+            const words = text.split(' ');
+            // Ищем слова, которые могут быть фамилиями (с заглавной буквы)
+            const possibleTeachers = words.filter(word => 
+                word.length > 2 && 
+                word[0] === word[0].toUpperCase() && 
+                !word.match(/\d/) &&
+                !this.isSubjectWord(word)
+            );
+            
+            if (possibleTeachers.length > 0) {
+                teacher = possibleTeachers.join(' ');
+                subject = subject.replace(teacher, '').trim();
+            }
+        }
+        
+        return {
+            subject: subject || text,
+            teacher: teacher,
+            room: room,
+            rawText: text
+        };
+    }
+    
+    // Вспомогательный метод для определения служебных слов
+    isSubjectWord(word) {
+        const subjectWords = [
+            'математика', 'физика', 'история', 'русский', 'английский', 'литература',
+            'физкультура', 'информатика', 'биология', 'обществознание', 'химия'
+        ];
+        return subjectWords.includes(word.toLowerCase());
+    }
+    
+    // НОВЫЙ МЕТОД: Стандартное время по номеру пары
+    getTimeByPairNumber(pairNumber) {
+        const times = {
+            '1': '8:30 – 10:00',
+            '2': '10:10 – 11:40', 
+            '3': '12:00 – 13:30',
+            '4': '13:40 – 15:10',
+            '5': '15:30 – 17:00',
+            '6': '17:10 – 18:40',
+            '7': '18:50 – 20:20'
+        };
+        return times[pairNumber] || '';
+    }
+    
+    extractTime(text) {
+        // Ищем время в форматах: 8:30-10:00, 8.30-10.00, 8:30 – 10:00
+        const timeMatch = text.match(/(\d{1,2}[:.]\d{2})\s*[-–]\s*(\d{1,2}[:.]\d{2})/);
+        if (timeMatch) {
+            const startTime = timeMatch[1].replace('.', ':');
+            const endTime = timeMatch[2].replace('.', ':');
+            return `${startTime} – ${endTime}`;
+        }
+        
+        // Ищем отдельные временные отметки
+        const singleTimeMatch = text.match(/(\d{1,2}[:.]\d{2})/);
+        if (singleTimeMatch) {
+            return singleTimeMatch[0].replace('.', ':');
+        }
+        
+        return '';
+    }
+    
+    extractPairNumber(text) {
+        const pairMatch = text.match(/(\d)\s*пара/);
+        return pairMatch ? pairMatch[1] : '';
+    }
+            
+            isGroupName(text) {
+                const normalized = text.trim();
+                return /^[А-ЯЁ][А-ЯЁа-яё]?-\d{2,3}-\d$/.test(normalized);
+            }
+        }
+
+        // ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
+        let scheduleParser = new DocxScheduleParser();
+        let currentSchedules = [];
+        let currentGroup = null;
+        let allGroups = new Set();
+
+        // ==================== ОБРАБОТЧИКИ ФАЙЛОВ ====================
+        document.getElementById('scheduleFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                loadScheduleFile(file);
+            }
+        });
+
+        async function loadScheduleFile(file) {
+            showStatus('Загрузка DOCX файла...', 'loading');
+            document.getElementById('fileInfo').textContent = `Файл: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+            
+            try {
+                showStatus('Обработка DOCX файла...', 'loading');
+                
+                // Парсим DOCX файл
+                currentSchedules = await scheduleParser.parseDocxFile(file);
+                
+                if (currentSchedules.length === 0) {
+                    showStatus('Не удалось найти таблицы с расписанием в файле.', 'error');
+                    return;
+                }
+                
+                // Собираем все группы
+                allGroups.clear();
+                currentSchedules.forEach(schedule => {
+                    schedule.groups.forEach(group => {
+                        allGroups.add(group.name);
+                    });
+                });
+                
+                showStatus(`Успешно! Загружено ${currentSchedules.length} таблиц, ${allGroups.size} групп`, 'success');
+                
+                // Показываем выбор групп
+                showGroupSelection();
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showStatus('Ошибка при обработке DOCX файла: ' + error.message, 'error');
+            }
+        }
+
+        // ==================== ПОКАЗ ГРУПП ====================
+        function showGroupSelection() {
+            const groupGrid = document.getElementById('groupGrid');
+            const groupsCount = document.getElementById('groupsCount');
+            const scheduleDate = document.getElementById('scheduleDate');
+            
+            // Показываем дату из первого расписания
+            if (currentSchedules.length > 0) {
+                scheduleDate.textContent = `Дата: ${currentSchedules[0].date}`;
+            }
+            
+            // Очищаем и заполняем сетку групп
+            groupGrid.innerHTML = '';
+            const groupsArray = Array.from(allGroups).sort();
+            
+            groupsArray.forEach(groupName => {
+                const groupCard = document.createElement('div');
+                groupCard.className = 'group-card';
+                groupCard.innerHTML = `<div class="group-name">${groupName}</div>`;
+                groupCard.onclick = () => selectGroup(groupName);
+                groupGrid.appendChild(groupCard);
+            });
+            
+            groupsCount.textContent = `Загружено групп: ${groupsArray.length}`;
+            showScreen('groupScreen');
+        }
+
+        function selectGroup(groupName) {
+            currentGroup = groupName;
+            showGroupSchedule();
+        }
+
+       // ==================== ИСПРАВЛЕННЫЙ ПОКАЗ РАСПИСАНИЯ ГРУППЫ ====================
+function showGroupSchedule() {
+    const title = document.getElementById('groupScheduleTitle');
+    const table = document.getElementById('groupScheduleTable');
+    const status = document.getElementById('scheduleStatus');
+    
+    title.textContent = `Группа: ${currentGroup}`;
+    status.textContent = 'Формирование расписания...';
+    
+    // Находим расписание для выбранной группы
+    let groupSchedule = null;
+    let groupIndex = -1;
+    
+    for (let schedule of currentSchedules) {
+        groupIndex = schedule.groups.findIndex(g => g.name === currentGroup);
+        if (groupIndex !== -1) {
+            groupSchedule = schedule;
+            break;
+        }
+    }
+    
+    if (!groupSchedule) {
+        table.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 40px; color: #666;">Расписание для выбранной группы не найдено</td></tr>';
+        status.textContent = 'Расписание не найдено';
+        showScreen('groupScheduleScreen');
+        return;
+    }
+    
+    // Строим таблицу
+    let html = `
+        <tr>
+            <th class="pair-number">Пара</th>
+            <th class="time-column">Время</th>
+            <th>Занятие</th>
+        </tr>
+    `;
+    
+    let hasLessons = false;
+    
+    groupSchedule.pairs.forEach(pair => {
+        const lesson = pair.lessons[groupIndex];
+        // ИСПРАВЛЕНИЕ: Правильное отображение времени
+        const timeDisplay = pair.time || this.getTimeByPairNumber(pair.number) || pair.rawTime;
+        const pairDisplay = pair.number ? `${pair.number} пара` : '';
+        
+        if (lesson) {
+            hasLessons = true;
+            html += `
+                <tr>
+                    <td class="pair-number">${pairDisplay}</td>
+                    <td class="time-column">${timeDisplay}</td>
+                    <td class="lesson-cell has-lesson">
+                        <div class="lesson-subject">${lesson.subject}</div>
+                        ${lesson.teacher ? `<div class="lesson-teacher">👨‍🏫 ${lesson.teacher}</div>` : ''}
+                        ${lesson.room ? `<div class="lesson-room">🏫 ${lesson.room}</div>` : ''}
+                    </td>
+                </tr>
+            `;
+        } else if (timeDisplay && timeDisplay.trim() && !timeDisplay.includes('пара')) {
+            html += `
+                <tr>
+                    <td class="pair-number">${pairDisplay}</td>
+                    <td class="time-column">${timeDisplay}</td>
+                    <td class="empty-cell">—</td>
+                </tr>
+            `;
+        }
+    });
+    
+    if (!hasLessons) {
+        html = '<tr><td colspan="3" style="text-align: center; padding: 40px; color: #666;">Нет занятий на этот день</td></tr>';
+    }
+    
+    table.innerHTML = html;
+    status.textContent = `Расписание загружено (${groupSchedule.pairs.length} временных слотов)`;
+    showScreen('groupScheduleScreen');
+}
+
+// Добавляем метод getTimeByPairNumber в глобальную область
+function getTimeByPairNumber(pairNumber) {
+    const times = {
+        '1': '8:30 – 10:00',
+        '2': '10:10 – 11:40', 
+        '3': '12:00 – 13:30',
+        '4': '13:40 – 15:10',
+        '5': '15:30 – 17:00',
+        '6': '17:10 – 18:40',
+        '7': '18:50 – 20:20'
+    };
+    return times[pairNumber] || '';
+}
+
+        // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function showStatus(message, type = 'info') {
+            const statusElement = document.getElementById('uploadStatus');
+            statusElement.textContent = message;
+            statusElement.className = type;
+            
+            // Автоочистка успешных сообщений
+            if (type === 'success') {
+                setTimeout(() => {
+                    if (statusElement.textContent === message) {
+                        statusElement.textContent = '';
+                        statusElement.className = '';
+                    }
+                }, 5000);
+            }
+        }
+
+        // ==================== VK BRIDGE ИНИЦИАЛИЗАЦИЯ ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof vkBridge !== 'undefined') {
+                vkBridge.send('VKWebAppInit', {})
+                    .then(() => console.log('VK Mini App инициализирован'))
+                    .catch(error => console.error('Ошибка VK:', error));
+            } else {
+                console.log('Запуск в браузере');
+            }
+            
+            // Информация о поддержке форматов
+            console.log('Приложение готово к загрузке DOCX файлов');
+        });
+    </script>
+</body>
+</html>
